@@ -121,7 +121,7 @@ def make_plots(json_path):
         "패션,뷰티": 0.2
     }
     TOTAL = 400000 # 40만 문장
-
+    TIME_TOTAL = 1000 * 60 * 60 # 1000시간에 해당하는 seconds
     def get_percent(category,current_count):
         domain, origin_lang, _ = category.split("_")
         if origin_lang in ["KO", "ko"]:
@@ -162,8 +162,60 @@ def make_plots(json_path):
         ax2.bar_label(bar_container, label=percent, fmt="{:,.2f}%",fontsize= 10, label_type = "center")
         plt.axvline(x = 100, linestyle = "--")
         plt.rcParams.update({"figure.autolayout": True})
-        fig.savefig(f"{json_path}/카테고리 분포.png", transparent=False, dpi=80, bbox_inches="tight") # 저장
-        return f"{json_path}/카테고리 분포.png" 
-    domain_plot_path = domain_plot(x = domain_plot_x,y = domain_plot_y, percent =percent)
+        fig.savefig(f"{json_path}/카테고리 분포(문장).png", transparent=False, dpi=80, bbox_inches="tight") # 저장
+        return f"{json_path}/카테고리 분포(문장).png" 
+    domain_plot_path = domain_plot(x = domain_plot_x, y = domain_plot_y, percent =percent)
     plot_paths.append(domain_plot_path)
+    
+    def get_percent_time (category,total_time):
+        domain, origin_lang, _ = category.split("_")
+        if origin_lang in ["KO", "ko"]:
+            return (total_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100
+        elif origin_lang in ["EN", "en"]:
+            return (total_time / (DOMAIN_DISTRIBUTION_EN[domain] * TIME_TOTAL)) * 100
+        elif origin_lang in ["JP", "jp"]:
+            return (total_time / (DOMAIN_DISTRIBUTION_JP[domain] * TIME_TOTAL)) * 100
+        else:
+            return (total_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100
+
+    categories = df["category"].unique()
+    categories_dict = {key:0 for key in categories}
+    contentsIdx = df["contentsIdx"].unique()
+    for idx in contentsIdx:
+        temp = df.loc[df["contentsIdx"] == idx].iloc[0]
+        cat, id, total = temp["category"], temp["contentsIdx"], temp["li_total_voice_time"]
+        categories_dict[cat] += float(total)
+    domain_time_plot_x = categories_dict.keys()
+    domain_time_plot_y = categories_dict.values()
+    percent_time = []
+    for category, total_time in zip(domain_time_plot_x, domain_time_plot_y):
+        percent_time.append(get_percent_time(category, total_time))
+
+    
+    def domain_time_plot(x,y, percent):
+        fig, ax = plt.subplots(figsize=(15, 3)) # change the figsize manually
+        y_pos = np.arange(len(x))
+        # first axes to draw in all 100%
+        y1 = [100 for _ in range(len(y))]
+        ax.barh(y_pos, y1, height=0.6, align="center", color="silver")
+        ax.set_yticks(y_pos, x)
+        ax.set_xlabel("구축 비율", fontsize = 12)
+        ax.set_ylabel("카테고리", fontsize = 12)
+        ax.set_title(label="카테고리 분포", fontsize=15)
+        x_labels = ax.get_xticklabels() # ax.set_xticklabels()
+        y_labels = ax.get_yticklabels() # ax.set_yticklabels()
+        plt.setp(x_labels, fontsize= 10) # 혹은 setp 로 여러 설정 한번에 하기
+        plt.setp(y_labels, fontsize = 10) # 혹은 setp로 여러 설정 한번에 하기
+        # second axes sharing the xaxis
+        ax2 = ax.twinx()
+        bar_container = ax2.barh(y_pos, percent, height=0.6, align="center", color="yellowgreen")
+        ax2.set_yticks([])
+        ax2.bar_label(bar_container, label=percent, fmt="{:,.2f}%",fontsize= 10, label_type = "center")
+        plt.axvline(x = 100, linestyle = "--")
+        plt.rcParams.update({"figure.autolayout": True})
+        fig.savefig(f"{json_path}/카테고리 분포(시간).png", transparent=False, dpi=80, bbox_inches="tight") # 저장
+        return f"{json_path}/카테고리 분포(시간).png" 
+    domain_time_plot(domain_time_plot_x, domain_time_plot_y, percent_time)
+    
+    
     return plot_paths

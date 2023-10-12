@@ -205,7 +205,7 @@ def validate_jsons(json_dir):
     #setting loggier for json validator.
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
-    filehandler = logging.FileHandler(filename = os.path.join(json_dir, "validation_result.log"), mode="a", encoding="utf-8")
+    filehandler = logging.FileHandler(filename = os.path.join(json_dir, "구문정확성.log"), mode="a", encoding="utf-8")
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     filehandler.setFormatter(formatter)
     logger.addHandler(filehandler)
