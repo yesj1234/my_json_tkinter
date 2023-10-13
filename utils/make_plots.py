@@ -125,23 +125,37 @@ def make_plots(json_path):
     def get_percent(category,current_count):
         domain, origin_lang, _ = category.split("_")
         if origin_lang in ["KO", "ko"]:
-            return (current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL)) * 100
+            return current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL) * 100
         elif origin_lang in ["EN", "en"]:
-            return (current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL)) * 100
+            return current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL) * 100
         elif origin_lang in ["JP", "jp"]:
-            return (current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL)) * 100
+            return current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL) * 100
         else:
-            return (current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL)) * 100
+            return current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL) * 100
+        
+    def get_percent_label(category,current_count):
+        domain, origin_lang, _ = category.split("_")
+        if origin_lang in ["KO", "ko"]:
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL)) * 100):0.2f})%")
+        elif origin_lang in ["EN", "en"]:
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL)) * 100):0.2f})%")
+        elif origin_lang in ["JP", "jp"]:
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL)) * 100):0.2f})%")
+        else:
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL)) * 100):0.2f})%")
 
     domain_data = df["category"].value_counts().sort_values() # sort in ascending order
     domain_plot_x = domain_data.keys()
     domain_plot_y = domain_data.values
     percent = []
+    percent_label = []
     for category, count in zip(domain_plot_x, domain_plot_y):
         percent.append(get_percent(category, count))
+        percent_label.append(get_percent_label(category, count))
+    print(percent)
+    print(percent_label)
 
-
-    def domain_plot(x,y, percent):
+    def domain_plot(x,y, percent, percent_label):
         fig, ax = plt.subplots(figsize=(15, 3)) # change the figsize manually
         y_pos = np.arange(len(x))
         # first axes to draw in all 100%
@@ -150,21 +164,21 @@ def make_plots(json_path):
         ax.set_yticks(y_pos, x)
         ax.set_xlabel("구축 비율", fontsize = 12)
         ax.set_ylabel("카테고리", fontsize = 12)
-        ax.set_title(label="카테고리 분포", fontsize=15)
+        ax.set_title(label="카테고리 분포(400,000문장)", fontsize=15)
         x_labels = ax.get_xticklabels() # ax.set_xticklabels()
         y_labels = ax.get_yticklabels() # ax.set_yticklabels()
         plt.setp(x_labels, fontsize= 10) # 혹은 setp 로 여러 설정 한번에 하기
         plt.setp(y_labels, fontsize = 10) # 혹은 setp로 여러 설정 한번에 하기
         # second axes sharing the xaxis
         ax2 = ax.twinx()
-        bar_container = ax2.barh(y_pos, percent, height=0.6, align="center", color="yellowgreen")
+        bar_container = ax2.barh(y_pos, percent, height=0.6, align="center", color="yellowgreen", label=percent_label)
         ax2.set_yticks([])
-        ax2.bar_label(bar_container, label=percent, fmt="{:,.2f}%",fontsize= 10, label_type = "center")
+        ax2.bar_label(bar_container, fontsize= 10, label_type = "center")
         plt.axvline(x = 100, linestyle = "--")
         plt.rcParams.update({"figure.autolayout": True})
         fig.savefig(f"{json_path}/카테고리 분포(문장).png", transparent=False, dpi=80, bbox_inches="tight") # 저장
         return f"{json_path}/카테고리 분포(문장).png" 
-    domain_plot_path = domain_plot(x = domain_plot_x, y = domain_plot_y, percent =percent)
+    domain_plot_path = domain_plot(x = domain_plot_x, y = domain_plot_y, percent =percent, percent_label=percent_label)
     plot_paths.append(domain_plot_path)
     
     def get_percent_time (category,total_time):
@@ -201,7 +215,7 @@ def make_plots(json_path):
         ax.set_yticks(y_pos, x)
         ax.set_xlabel("구축 비율", fontsize = 12)
         ax.set_ylabel("카테고리", fontsize = 12)
-        ax.set_title(label="카테고리 분포", fontsize=15)
+        ax.set_title(label="카테고리 분포(1,000시간)", fontsize=15)
         x_labels = ax.get_xticklabels() # ax.set_xticklabels()
         y_labels = ax.get_yticklabels() # ax.set_yticklabels()
         plt.setp(x_labels, fontsize= 10) # 혹은 setp 로 여러 설정 한번에 하기
@@ -217,5 +231,41 @@ def make_plots(json_path):
         return f"{json_path}/카테고리 분포(시간).png" 
     domain_time_plot(domain_time_plot_x, domain_time_plot_y, percent_time)
     
+    
+    contentsList = df["contentsIdx"].unique()
+    pairs = []
+    for idx in contentsList:
+        temp = df.loc[df["contentsIdx"] == idx].iloc[0]
+        _, video_time, voice_time = temp["contentsIdx"],temp["li_total_video_time"], temp["li_total_voice_time"]
+        ratio = round((float(voice_time) / float(video_time)) * 100, 2) 
+        pairs.append((idx, ratio))
+    pairs.sort(key = lambda x: x[1])
+    contents = list(map(lambda x: x[0], pairs))
+    ratios = list(map(lambda x : x[1], pairs))
+    
+    def contents_voice_ratio_plot(x,y, percent):
+        fig, ax = plt.subplots(figsize=(15, 10)) # change the figsize manually
+        y_pos = np.arange(len(x))
+        # first axes to draw in all 100%
+        y1 = [100 for _ in range(len(y))]
+        ax.barh(y_pos, y1, height=0.6, align="center", color="silver")
+        ax.set_yticks(y_pos, x)
+        ax.set_xlabel("발화시간비율", fontsize = 12)
+        ax.set_ylabel("컨텐츠", fontsize = 12)
+        ax.set_title(label="컨텐츠 별 음성 발화 시간", fontsize=15)
+        x_labels = ax.get_xticklabels() # ax.set_xticklabels()
+        y_labels = ax.get_yticklabels() # ax.set_yticklabels()
+        plt.setp(x_labels, fontsize= 10) # 혹은 setp 로 여러 설정 한번에 하기
+        plt.setp(y_labels, fontsize = 10) # 혹은 setp로 여러 설정 한번에 하기
+        # second axes sharing the xaxis
+        ax2 = ax.twinx()
+        bar_container = ax2.barh(y_pos, percent, height=0.6, align="center", color="yellowgreen")
+        ax2.set_yticks([])
+        ax2.bar_label(bar_container, label=percent, fmt="{:,.2f}%",fontsize= 10, label_type = "center")
+        plt.axvline(x = 100, linestyle = "--")
+        plt.rcParams.update({"figure.autolayout": True})
+        fig.savefig(f"{json_path}/컨텐츠 별 음성 발화 시간.png", transparent=False, dpi=80, bbox_inches="tight")
+
+    contents_voice_ratio_plot(x = contents, y = ratios, percent = ratios)
     
     return plot_paths
