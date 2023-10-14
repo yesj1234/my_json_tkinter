@@ -6,7 +6,7 @@ from utils.validate_jsons import validate_jsons
 import logging
 import sys
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("json_validator_main")
 logger.setLevel(logging.INFO)
 streamhandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
