@@ -1,6 +1,6 @@
 import numpy as np 
 def contents_voice_ratio_plot(x,y, percent, plt, json_path):
-    fig, ax = plt.subplots(figsize=(15, 10)) # change the figsize manually
+    fig, ax = plt.subplots(figsize=(15, 30)) # change the figsize manually
     y_pos = np.arange(len(x))
     # first axes to draw in all 100%
     y1 = [100 for _ in range(len(y))]

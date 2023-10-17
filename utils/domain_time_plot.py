@@ -34,17 +34,11 @@ def domain_time_plot(x, y, percent, percent_label, plt, json_path):
     y_pos = np.arange(len(x))
     y1 = [100 for _ in range(len(y))]
     
-    fig = plt.figure(figsize=(15, 3))
+    fig = plt.figure(figsize=(15, 6))
     plt.barh(y_pos, y1, color="silver")  # 100% 배경
-    plt.barh(y_pos, percent, color="yellowgreen", label=True)  # 해당카테고리의 %
-    plt.axvline(x=100, linestyle="--")  # 100% 수직 라인
-    for i, v in enumerate(percent):  # 레이블링(색이랑 그런건 조정하셈)
-        plt.text(v / 2, 0, percent_label[i],
-                fontsize=9,
-                color='blue',
-                horizontalalignment='center',
-                verticalalignment='bottom')
-
+    barh_container = plt.barh(y_pos, percent, color="yellowgreen", label=True)  # 해당카테고리의 %
+    plt.axvline(x=100, linestyle="--")  # 100% 수직 라인    
+    plt.bar_label(barh_container, labels = percent_label)
     plt.title(f"카테고리분포(total: {int(TIME_TOTAL/3600)}시간)", fontsize=15)
     plt.xlabel("구축비율", fontsize=12)
     plt.ylabel("카테고리", fontsize=12)
@@ -52,9 +46,9 @@ def domain_time_plot(x, y, percent, percent_label, plt, json_path):
         "일상,소통": (int((TIME_TOTAL * 0.20) / 3600), 20),
         "여행": (int((TIME_TOTAL * 0.15) / 3600), 15),
         "게임": (int((TIME_TOTAL * 0.15) / 3600), 15),
-        "경제": (int((TIME_TOTAL * 0.5) / 3600), 5),
-        "교육": (int((TIME_TOTAL * 0.5) / 3600), 5),
-        "스포츠": (int((TIME_TOTAL * 0.5) / 3600), 5),
+        "경제": (int((TIME_TOTAL * 0.05) / 3600), 5),
+        "교육": (int((TIME_TOTAL * 0.05) / 3600), 5),
+        "스포츠": (int((TIME_TOTAL * 0.05) / 3600), 5),
         "라이브커머스": (int((TIME_TOTAL * 0.15) / 3600), 15),
         "음식,요리": (int((TIME_TOTAL * 0.20) / 3600), 20)
     }

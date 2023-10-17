@@ -221,7 +221,11 @@ def validate_jsons(json_dir):
                 json_files.append(os.path.join(root, file))
                 try:
                     with open(os.path.join(root, file), "r", encoding="utf-8") as json_file:
-                        parsed_json = json.load(json_file)
+                        try:
+                          parsed_json = json.load(json_file)
+                        except Exception as e:
+                          logger.error(e)
+                          pass
                     for error in sorted(validator.iter_errors(parsed_json), key=str):
                         print(
                             f"Message: {error.message} \nFile: {file} \nError source : {'.'.join([str(item) for item in error.absolute_path])}\n")

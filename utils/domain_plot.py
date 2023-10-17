@@ -33,16 +33,12 @@ def domain_plot(x, y, percent, percent_label, plt, json_path):
     y_pos = np.arange(len(x))
     y1 = [100 for _ in range(len(y))]
     
-    fig = plt.figure(figsize=(15, 3))
+    fig = plt.figure(figsize=(15, 6))
     plt.barh(y_pos, y1, color="silver")  # 100% 배경
     plt.barh(y_pos, percent, color="yellowgreen", label=True)  # 해당카테고리의 %
     plt.axvline(x=100, linestyle="--")  # 100% 수직 라인
-    for i, v in enumerate(percent):  # 레이블링(색이랑 그런건 조정하셈)
-        plt.text(v / 2, 0, percent_label[i],
-                fontsize=9,
-                color='blue',
-                horizontalalignment='center',
-                verticalalignment='bottom')
+    barh_container = plt.barh(y_pos, percent, color="yellowgreen", label=True)  # 해당카테고리의 %
+    plt.bar_label(barh_container, labels = percent_label)
 
     plt.title(f"카테고리분포(total: {TOTAL}건)", fontsize=15)
     plt.xlabel("구축비율", fontsize=12)
@@ -52,7 +48,7 @@ def domain_plot(x, y, percent, percent_label, plt, json_path):
         "여행": (TOTAL * 0.15, 15),
         "게임": (TOTAL * 0.15, 15),
         "경제": (TOTAL * 0.05, 5),
-        "교육": (TOTAL * 0.2, 5),
+        "교육": (TOTAL * 0.05, 5),
         "스포츠": (TOTAL * 0.05, 5),
         "라이브커머스": (TOTAL * 0.15, 15),
         "음식,요리": (TOTAL * 0.2, 20)

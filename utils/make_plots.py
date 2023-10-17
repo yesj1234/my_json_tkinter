@@ -22,6 +22,11 @@ streamhandler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 streamhandler.setFormatter(formatter)
 logger.addHandler(streamhandler)
+filehandler = logging.FileHandler("../error_file.log")
+filehandler.setFormatter(formatter)
+filehandler.setLevel(logging.ERROR)
+logger.addHandler(filehandler)
+
 def make_plots(json_path):
     plot_paths = []
     # 전체 데이터 받아오기    
@@ -33,11 +38,14 @@ def make_plots(json_path):
                     _, ext = os.path.splitext(file)
                     if ext == ".json":
                         with open(os.path.join(root, file), "r+", encoding="utf-8") as f:
-                            json_file = json.load(f)
-                            jsons.append(json_file)
-        
+                            try:
+                                json_file = json.load(f)
+                                jsons.append(json_file)
+                            except Exception as e:
+                                logger.warning(e)
+                                logger.error(os.path.join(root, file))
         df = pd.DataFrame(jsons)
-        df.to_csv(f"{json_path}/file.csv", mode="w", encoding="utf-8")
+        # df.to_csv(f"{json_path}/file.csv", mode="w", encoding="utf-8")
     
     # 성별 분포 그래프
     gender_plot(plt, sns, json_path, df)
@@ -84,7 +92,7 @@ def make_plots(json_path):
         _, video_time, voice_time = temp["contentsIdx"],temp["li_total_video_time"], temp["li_total_voice_time"]
         ratio = round((float(voice_time) / float(video_time)) * 100, 2) 
         pairs.append((idx, ratio))
-    pairs.sort(key = lambda x: x[0])
+    pairs.sort(key = lambda x: int(x[0]))
     contents = list(map(lambda x: x[0], pairs))
     ratios = list(map(lambda x : x[1], pairs))
     contents_voice_ratio_plot(x = contents, y = ratios, percent = ratios, plt = plt, json_path = json_path)

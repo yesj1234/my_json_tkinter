@@ -6,7 +6,6 @@ def get_word_phrase(origin_lang, tc_text):
         
 def word_phrase_plot(plt, sns, json_path, df):
     plt.figure(figsize = (20, 15))
-    print(df["tc_text_len"].value_counts().index.sort_values())
     ax = sns.countplot(data = df, y="tc_text_len", order = df['tc_text_len'].value_counts().index.sort_values(ascending=False)) # draw a bar plot
     ax.bar_label(container = ax.containers[0]) # bar labeling
     ax.set_xlabel("건", fontsize = 12)

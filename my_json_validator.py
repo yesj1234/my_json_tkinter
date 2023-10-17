@@ -47,15 +47,16 @@ class MyJsonValidator:
     def confirm_callback(self): 
         json_path = folder_path.get()
         try:
-            plots = make_plots(json_path)
+            print(json_path)
+            make_plots(json_path)
             # logger.info(plots)
         except Exception as e:
-            logger.warning(e)
+            print(e)
             pass
         try:
             validate_jsons(json_dir = json_path)
         except Exception as e:
-            logger.warning(e)
+            print(e)
             pass
 
 #1. root 
