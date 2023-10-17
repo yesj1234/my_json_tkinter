@@ -29,5 +29,5 @@ DOMAIN_DISTRIBUTION_JP = {
     "음식,요리": 0.2,
     "패션,뷰티": 0.2
 }
-TOTAL = 400000 # 40만 문장
+TOTAL = 600000 # 40만 문장
 TIME_TOTAL = 1000 * 60 * 60 # 1000시간에 해당하는 seconds
