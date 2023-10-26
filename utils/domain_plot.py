@@ -4,9 +4,11 @@ from .constants import (
     DOMAIN_DISTRIBUTION_CH,
     DOMAIN_DISTRIBUTION_JP,
     TOTAL,
-    TIME_TOTAL
+    TIME_TOTAL,
+    YTICK_INFO
 )
 import numpy as np
+from .decorators import try_decorator
 def get_percent(category,current_count):
     domain, origin_lang, _ = category.split("_")
     if origin_lang in ["KO", "ko"]:
@@ -28,8 +30,8 @@ def get_percent_label(category,current_count):
         return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL)) * 100):0.2f})%")
     else:
         return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL)) * 100):0.2f})%")
-
-def domain_plot(x, y, percent, percent_label, plt, json_path):
+@try_decorator
+def domain_plot(x, y, percent, percent_label, plt, json_path, lang):
     y_pos = np.arange(len(x))
     y1 = [100 for _ in range(len(y))]
     
@@ -43,20 +45,11 @@ def domain_plot(x, y, percent, percent_label, plt, json_path):
     plt.title(f"카테고리분포(total: {TOTAL}건)", fontsize=15)
     plt.xlabel("구축비율", fontsize=12)
     plt.ylabel("카테고리", fontsize=12)
-    ytick_info = {
-        "일상,소통": (TOTAL * 0.2, 20),
-        "여행": (TOTAL * 0.15, 15),
-        "게임": (TOTAL * 0.15, 15),
-        "경제": (TOTAL * 0.05, 5),
-        "교육": (TOTAL * 0.05, 5),
-        "스포츠": (TOTAL * 0.05, 5),
-        "라이브커머스": (TOTAL * 0.15, 15),
-        "음식,요리": (TOTAL * 0.2, 20)
-    }
+    ytick_info = YTICK_INFO[lang]
     x = list(map(lambda x: x.split("_")[0], x))
     x = list(map(lambda x: x + f"\n({int(round(ytick_info[x][0], 0))}건: {int(ytick_info[x][1])}%)", x))
     
     plt.yticks(y_pos, x)  # 건수와 % 는 상황에 맞게 조정되도록 수정하셈
-
+    print("domain plot completed")
     fig.savefig(f"{json_path}/카테고리 분포(문장).png", transparent=False, dpi=80, bbox_inches="tight")  # 저장(요것도 수정하시고)
-    
+    return f"{json_path}/카테고리 분포(문장).png"

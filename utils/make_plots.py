@@ -27,9 +27,11 @@ filehandler.setFormatter(formatter)
 filehandler.setLevel(logging.ERROR)
 logger.addHandler(filehandler)
 
-def make_plots(json_path):
+
+
+def make_plots(json_path, lang):
     plot_paths = []
-    # ì „ì²´ ë°ì´í„° ë°›ì•„ì˜¤ê¸°    
+    # ÀüÃ¼ µ¥ÀÌÅÍ ¹Ş¾Æ¿À±â    
     if json_path:
         jsons = [] 
         for root, dir, files in os.walk(json_path):
@@ -47,16 +49,17 @@ def make_plots(json_path):
         df = pd.DataFrame(jsons)
         # df.to_csv(f"{json_path}/file.csv", mode="w", encoding="utf-8")
     
-    # ì„±ë³„ ë¶„í¬ ê·¸ë˜í”„
+    # ¼ºº° ºĞÆ÷ ±×·¡ÇÁ
     gender_plot(plt, sns, json_path, df)
-    # í”Œë«í¼ ë¶„í¬ ê·¸ë˜í”„
+    # ÇÃ·§Æû ºĞÆ÷ ±×·¡ÇÁ
     platform_plot(plt, sns, json_path, df)
-    #í™”ììˆ˜ ë¶„í¬ ê·¸ë˜í”„
+    #È­ÀÚ¼ö ºĞÆ÷ ±×·¡ÇÁ
     speaker_plot(plt, sns, json_path, df)
-    #ìŒì ˆìˆ˜ ë¶„í¬ ê·¸ë˜í”„ 
+    #À½Àı¼ö ºĞÆ÷ ±×·¡ÇÁ 
     df["tc_text_len"] = df[["origin_lang", "tc_text"]].apply(lambda row : get_word_phrase(row["origin_lang"], row["tc_text"]), axis=1)
     word_phrase_plot(plt, sns, json_path, df)
-    #ì¹´í…Œê³ ë¦¬(ë¬¸ì¥ ê¸°ì¤€) ë¶„í¬ ê·¸ë˜í”„
+
+    #Ä«Å×°í¸®(¹®Àå ±âÁØ) ºĞÆ÷ ±×·¡ÇÁ
     domain_data = df["category"].value_counts().sort_values() # sort in ascending order
     domain_plot_x = domain_data.keys()
     domain_plot_y = domain_data.values
@@ -65,8 +68,8 @@ def make_plots(json_path):
     for category, count in zip(domain_plot_x, domain_plot_y):
         percent.append(get_percent(category, count))
         percent_label.append(get_percent_label(category, count))
-    domain_plot(x = domain_plot_x, y = domain_plot_y, percent =percent, percent_label=percent_label, plt=plt, json_path=json_path)
-    #ì¹´í…Œê³ ë¦¬(ì‹œê°„ ê¸°ì¤€) ë¶„í¬ ê·¸ë˜í”„
+    domain_plot(x = domain_plot_x, y = domain_plot_y, percent =percent, percent_label=percent_label, plt=plt, json_path=json_path, lang=lang)
+    #Ä«Å×°í¸®(½Ã°£ ±âÁØ) ºĞÆ÷ ±×·¡ÇÁ
     categories = df["category"].unique()
     categories_dict = {key:0 for key in categories}
     contentsIdx = df["contentsIdx"].unique()
@@ -82,9 +85,9 @@ def make_plots(json_path):
         percent_time.append(get_percent_time(category, total_time))
         percent_time_label.append(get_percent_time_label(category, round(total_time, 2)))
         
-    domain_time_plot(x = domain_time_plot_x, y = domain_time_plot_y, percent=percent_time, percent_label=percent_time_label, plt = plt, json_path = json_path)
+    domain_time_plot(x = domain_time_plot_x, y = domain_time_plot_y, percent=percent_time, percent_label=percent_time_label, plt = plt, json_path = json_path, lang=lang)
    
-   #ì½˜í…ì¸ ë³„ ìŒì„± ë°œí™” ë¹„ìœ¨ ê·¸ë˜í”„
+   #ÄÜÅÙÃ÷º° À½¼º ¹ßÈ­ ºñÀ² ±×·¡ÇÁ
     contentsList = df["contentsIdx"].unique()
     pairs = []
     for idx in contentsList:

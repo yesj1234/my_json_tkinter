@@ -41,14 +41,29 @@ class MyJsonValidator:
         confirm_button = ttk.Button(mainframe, text="Ok", command=self.confirm_callback)
         confirm_button.grid(row=1, column=1, sticky="news")
         
+        # selecting language pair with radio button
+        global var
+        var = tk.StringVar()
+        values = {
+            "한일/한중/한영": "ko",
+            "일한": "ja",
+            "중한": "zh",
+            "영한": "en"
+        }
+        for text, value in values.items():
+            tk.Radiobutton(window, text = text, variable=var,value=value, indicator = 0, background="light blue").grid()
         
     def select_path(self): 
         folder_path.set(filedialog.askdirectory())
+    
+        
     def confirm_callback(self): 
         json_path = folder_path.get()
+        lang = var.get()
         try:
             print(json_path)
-            make_plots(json_path)
+            print(lang)
+            make_plots(json_path, lang)
             # logger.info(plots)
         except Exception as e:
             print(e)

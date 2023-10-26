@@ -1,4 +1,6 @@
 import numpy as np 
+from .decorators import try_decorator
+@try_decorator
 def contents_voice_ratio_plot(x,y, percent, plt, json_path):
     fig, ax = plt.subplots(figsize=(15, 30)) # change the figsize manually
     y_pos = np.arange(len(x))
@@ -20,4 +22,6 @@ def contents_voice_ratio_plot(x,y, percent, plt, json_path):
     ax2.bar_label(bar_container, label=percent, fmt="{:,.2f}%",fontsize= 10, label_type = "center")
     plt.axvline(x = 100, linestyle = "--")
     plt.rcParams.update({"figure.autolayout": True})
+    print("contents voice ratio plot completed")
     fig.savefig(f"{json_path}/컨텐츠 별 음성 발화 시간.png", transparent=False, dpi=80, bbox_inches="tight")
+    return f"{json_path}/컨텐츠 별 음성 발화 시간.png"
