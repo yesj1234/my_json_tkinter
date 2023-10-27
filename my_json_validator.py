@@ -18,7 +18,7 @@ class MyJsonValidator:
         window.title("json_validator")
         window.geometry("500x350")
         # setting up the main frame
-        mainframe = ttk.Frame(window, padding=15)
+        mainframe = ttk.Frame(window, borderwidth=5, relief='ridge', width=500, height=350)
         mainframe.grid(column=0, row=0, sticky="nwes")
         window.columnconfigure(0, weight = 1)
         window.rowconfigure(0, weight = 1)
@@ -45,13 +45,13 @@ class MyJsonValidator:
         global var
         var = tk.StringVar()
         values = {
-            "한일/한중/한영": "ko",
-            "일한": "ja",
-            "중한": "zh",
-            "영한": "en"
+            "한국어": "ko",
+            "일본어": "ja",
+            "중국어": "zh",
+            "영  어": "en"
         }
         for text, value in values.items():
-            tk.Radiobutton(window, text = text, variable=var,value=value, indicator = 0, background="light blue").grid()
+            tk.Radiobutton(mainframe, text = text, variable=var,value=value, indicator = 0, background="light blue").grid(column=1)
         
     def select_path(self): 
         folder_path.set(filedialog.askdirectory())
