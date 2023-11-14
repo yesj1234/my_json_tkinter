@@ -10,7 +10,8 @@ from .constants import (
 import numpy as np
 from .decorators import try_decorator
 def get_percent(category,current_count):
-    domain, origin_lang, _ = category.split("_")
+    infos = category.split("_")
+    domain, origin_lang = infos[0], infos[1]
     if origin_lang in ["KO", "ko"]:
         return current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL) * 100
     elif origin_lang in ["EN", "en"]:
@@ -21,7 +22,8 @@ def get_percent(category,current_count):
         return current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL) * 100
     
 def get_percent_label(category,current_count):
-    domain, origin_lang, _ = category.split("_")
+    infos = category.split("_")
+    domain, origin_lang = infos[0], infos[1]
     if origin_lang in ["KO", "ko"]:
         return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL)) * 100):0.2f})%")
     elif origin_lang in ["EN", "en"]:

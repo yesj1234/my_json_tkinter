@@ -12,7 +12,8 @@ from .decorators import try_decorator
 
 
 def get_percent_time (category,total_time):
-    domain, origin_lang, _ = category.split("_")
+    infos = category.split("_")
+    domain, origin_lang = infos[0], infos[1]
     if origin_lang in ["KO", "ko"]:
         return (total_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100
     elif origin_lang in ["EN", "en"]:
@@ -23,7 +24,8 @@ def get_percent_time (category,total_time):
         return (total_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100
 
 def get_percent_time_label(category,current_time):
-    domain, origin_lang, _ = category.split("_")
+    infos = category.split("_")
+    domain, origin_lang = infos[0], infos[1]
     if origin_lang in ["KO", "ko"]:
         return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100):0.2f})%")
     elif origin_lang in ["EN", "en"]:
