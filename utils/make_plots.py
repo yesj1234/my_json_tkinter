@@ -57,31 +57,31 @@ def make_plots(json_path, lang, **kwargs):
     # ���� ���� �׷���
     try:
         gender_plot(plt, sns, json_path, df)
-    except Exception as e:
-        logger.warning(e)
-        pass 
+    except Exception:
+       logger.exception("message")
+       pass 
     
     # �÷��� ���� �׷���
     try:
         platform_plot(plt, sns, json_path, df)
-    except Exception as e:
-        logger.warning(e)
-        pass
+    except Exception:
+       logger.exception("message")
+       pass
     
     #ȭ�ڼ� ���� �׷���
     try:
         speaker_plot(plt, sns, json_path, df)
-    except Exception as e:
-        logger.warning(e)
-        pass
+    except Exception:
+       logger.exception("message")
+       pass
     
     #������ ���� �׷��� 
     try:
         df["tc_text_len"] = df[["origin_lang", "tc_text"]].apply(lambda row : get_word_phrase(row["origin_lang"], row["tc_text"]), axis=1)
         word_phrase_plot(plt, sns, json_path, df)
-    except Exception as e:
-        logger.warning(e)
-        pass
+    except Exception:
+       logger.exception("message")
+       pass
     
     try:
         #ī�װ���(���� ����) ���� �׷���
