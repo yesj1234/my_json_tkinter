@@ -217,8 +217,8 @@ def validate_jsons(json_dir):
     validator = Draft7Validator(my_json_schema)
     for root, dir, files in os.walk(json_dir):
       if files:
-        pbar = tqdm(files)
-        for file in pbar:
+        print(f"files in {root}")
+        for file in files:
             _, ext = os.path.splitext(file)
             if ext == ".json":
                 json_files.append(os.path.join(root, file))
@@ -247,7 +247,7 @@ def validate_jsons(json_dir):
                 except ValidationError as e:
                     print(e)
                     continue
-        pbar.close()            
+
     required_property_missing_file = set(required_property_missing_file)
     logger.info(f"필수 항목 불충족 파일 개수: {len(required_property_missing_file)}")
     logger.info(f"형식 불충족 밸류 개수: {len(required_property_value_missing_file)}")

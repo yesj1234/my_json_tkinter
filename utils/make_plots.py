@@ -33,11 +33,13 @@ logger.addHandler(filehandler)
 def make_plots(json_path, lang, **kwargs):
     plot_paths = []
     # ��ü ������ �޾ƿ���    
-    print(kwargs)
-    if kwargs["csv_file_path"]:
+    
+    if kwargs:
+        logger.info(f"kwargs: {kwargs}")
         df = pd.read_csv(kwargs["csv_file_path"])
     
-    if json_path and not kwargs["csv_file_path"]:
+    if json_path:
+        logger.info(f"json_path: {json_path}")
         jsons = [] 
         for root, dir, files in os.walk(json_path):
             if files:
