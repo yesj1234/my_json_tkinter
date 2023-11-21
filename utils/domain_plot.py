@@ -8,30 +8,48 @@ from .constants import (
     YTICK_INFO
 )
 import numpy as np
+import logging
+import traceback
 from .decorators import try_decorator
+
+logger = logging.getLogger()
+
 def get_percent(category,current_count):
     infos = category.split("_")
     domain, origin_lang = infos[0], infos[1]
-    if origin_lang in ["KO", "ko"]:
-        return current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL) * 100
-    elif origin_lang in ["EN", "en"]:
-        return current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL) * 100
-    elif origin_lang in ["JP", "jp"]:
-        return current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL) * 100
-    else:
-        return current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL) * 100
-    
+    domain = domain.replace("/", ",")
+    origin_lang = origin_lang.lower()
+    try:
+        if origin_lang == "ko":
+            return current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL) * 100
+        elif origin_lang == "en":
+            return current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL) * 100
+        elif origin_lang == "jp":
+            return current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL) * 100
+        else:
+            return current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL) * 100
+    except Exception:
+        logger.error(traceback.print_exc())
+        pass
+    return False
 def get_percent_label(category,current_count):
     infos = category.split("_")
     domain, origin_lang = infos[0], infos[1]
-    if origin_lang in ["KO", "ko"]:
-        return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL)) * 100):0.2f})%")
-    elif origin_lang in ["EN", "en"]:
-        return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL)) * 100):0.2f})%")
-    elif origin_lang in ["JP", "jp"]:
-        return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL)) * 100):0.2f})%")
-    else:
-        return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL)) * 100):0.2f})%")
+    domain = domain.replace("/", ",")
+    origin_lang = origin_lang.lower()
+    try:
+        if origin_lang  == "ko":
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_KO[domain] * TOTAL)) * 100):0.2f})%")
+        elif origin_lang  == "en":
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_EN[domain] * TOTAL)) * 100):0.2f})%")
+        elif origin_lang  == "jp":
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_JP[domain] * TOTAL)) * 100):0.2f})%")
+        else:
+            return (f"{current_count}({((current_count / (DOMAIN_DISTRIBUTION_CH[domain] * TOTAL)) * 100):0.2f})%")
+    except:
+        logger.error(traceback.print_exc())
+        pass
+    return False
 @try_decorator
 def domain_plot(x, y, percent, percent_label, plt, json_path, lang):
     y_pos = np.arange(len(x))

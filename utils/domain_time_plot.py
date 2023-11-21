@@ -8,32 +8,50 @@ from .constants import (
     YTICK_INFO_TIME
 )
 import numpy as np
+import logging
+import traceback
 from .decorators import try_decorator
 
+logger = logging.getLogger()
 
 def get_percent_time (category,total_time):
     infos = category.split("_")
     domain, origin_lang = infos[0], infos[1]
-    if origin_lang in ["KO", "ko"]:
-        return (total_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100
-    elif origin_lang in ["EN", "en"]:
-        return (total_time / (DOMAIN_DISTRIBUTION_EN[domain] * TIME_TOTAL)) * 100
-    elif origin_lang in ["JP", "jp"]:
-        return (total_time / (DOMAIN_DISTRIBUTION_JP[domain] * TIME_TOTAL)) * 100
-    else:
-        return (total_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100
+    domain = domain.replace("/", ",")
+    origin_lang = origin_lang.lower()
+    try:
+        if origin_lang == "ko":
+            return (total_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100
+        elif origin_lang == "en":
+            return (total_time / (DOMAIN_DISTRIBUTION_EN[domain] * TIME_TOTAL)) * 100
+        elif origin_lang == "jp":
+            return (total_time / (DOMAIN_DISTRIBUTION_JP[domain] * TIME_TOTAL)) * 100
+        else:
+            return (total_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100
+    except Exception:
+        logger.error(traceback.print_exc())
+        pass
+    return False
 
 def get_percent_time_label(category,current_time):
     infos = category.split("_")
     domain, origin_lang = infos[0], infos[1]
-    if origin_lang in ["KO", "ko"]:
-        return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100):0.2f})%")
-    elif origin_lang in ["EN", "en"]:
-        return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_EN[domain] * TIME_TOTAL)) * 100):0.2f})%")
-    elif origin_lang in ["JP", "jp"]:
-        return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_JP[domain] * TIME_TOTAL)) * 100):0.2f})%")
-    else:
-        return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100):0.2f})%")
+    domain = domain.replace("/", ",")
+    origin_lang = origin_lang.lower()
+    try:
+        if origin_lang == "ko":
+            return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_KO[domain] * TIME_TOTAL)) * 100):0.2f})%")
+        elif origin_lang == "en":
+            return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_EN[domain] * TIME_TOTAL)) * 100):0.2f})%")
+        elif origin_lang == "jp":
+            return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_JP[domain] * TIME_TOTAL)) * 100):0.2f})%")
+        else:
+            return (f"{int(current_time / 3600)}({((current_time / (DOMAIN_DISTRIBUTION_CH[domain] * TIME_TOTAL)) * 100):0.2f})%")
+    except Exception:
+        logger.error(traceback.print_exc())
+        pass
+    return False
+
 @try_decorator
 def domain_time_plot(x, y, percent, percent_label, plt, json_path, lang):
     y_pos = np.arange(len(x))

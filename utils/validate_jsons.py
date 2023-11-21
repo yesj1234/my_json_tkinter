@@ -3,7 +3,7 @@ import os
 import jsonschema
 from jsonschema import validate, ValidationError, Draft7Validator
 import logging 
-from tqdm import tqdm
+import traceback
 my_json_schema = {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Generated schema for Root",
@@ -201,84 +201,26 @@ my_json_schema = {
 }
 
 
+logger = logging.getLogger()
 
 def validate_jsons(json_dir):
-    #setting loggier for json validator.
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    filehandler = logging.FileHandler(filename = os.path.join(json_dir, "구문정확성.log"), mode="a", encoding="utf-8")
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    filehandler.setFormatter(formatter)
-    logger.addHandler(filehandler)
-    
-    json_files = []
-    required_property_missing_file = []
-    required_property_value_missing_file = []
-    validator = Draft7Validator(my_json_schema)
-    for root, dir, files in os.walk(json_dir):
-      if files:
-        print(f"files in {root}")
-        for file in files:
-            _, ext = os.path.splitext(file)
-            if ext == ".json":
-                json_files.append(os.path.join(root, file))
-                try:
-                    with open(os.path.join(root, file), "r", encoding="utf-8") as json_file:
-                        try:
-                          parsed_json = json.load(json_file)
-                        except Exception as e:
-                          logger.error(e)
-                          pass
-                    for error in sorted(validator.iter_errors(parsed_json), key=str):
-                        print(
-                            f"Message: {error.message} \nFile: {file} \nError source : {'.'.join([str(item) for item in error.absolute_path])}\n")
-                        if "required property" in error.message:
-                            required_property_missing_file.append(file)
-                        else:
-                            required_property_value_missing_file.append(
-                                error.message)
-                        # print(error.validator)
-                        # print(error.validator_value)
-                        # print(error.relative_schema_path)
-                        # print(error.absolute_schema_path)
-                        # print(error.absolute_path)
-                        # print(error.json_path)
-                        # print(error.context)
-                except ValidationError as e:
-                    print(e)
-                    continue
-
-    required_property_missing_file = set(required_property_missing_file)
-    logger.info(f"필수 항목 불충족 파일 개수: {len(required_property_missing_file)}")
-    logger.info(f"형식 불충족 밸류 개수: {len(required_property_value_missing_file)}")
-    logger.info(f"검사한 총 파일 개수: {len(json_files)}")
-    
-def validate_jsons_main(args):
-  #setting loggier for json validator.
-  logger = logging.getLogger(__name__)
-  logger.setLevel(logging.INFO)
-  filehandler = logging.FileHandler(filename = os.path.join(args.json_dir, "구문정확성.log"), mode="a", encoding="utf-8")
-  formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-  filehandler.setFormatter(formatter)
-  logger.addHandler(filehandler)
-  
-  json_files = 0
+  json_files = []
   required_property_missing_file = []
   required_property_value_missing_file = []
   validator = Draft7Validator(my_json_schema)
-  for root, dir, files in os.walk(args.json_dir):
-      if files:
-        pbar = tqdm(files)
-        for file in pbar:
+  for root, dir, files in os.walk(json_dir):
+    if files:
+      for file in files:
           _, ext = os.path.splitext(file)
           if ext == ".json":
-              json_files += 1
+              json_files.append(os.path.join(root, file))
               try:
                   with open(os.path.join(root, file), "r", encoding="utf-8") as json_file:
                       try:
                         parsed_json = json.load(json_file)
                       except Exception as e:
-                        logger.error(e)
+                        logger.debug(f"{traceback.print_exc()}")
+                        logger.debug(f"file with encoding error: {file}")
                         pass
                   for error in sorted(validator.iter_errors(parsed_json), key=str):
                       print(
@@ -287,18 +229,45 @@ def validate_jsons_main(args):
                           required_property_missing_file.append(file)
                       else:
                           required_property_value_missing_file.append(
-                                error.message)
-                      # print(error.validator)
-                      # print(error.validator_value)
-                      # print(error.relative_schema_path)
-                      # print(error.absolute_schema_path)
-                      # print(error.absolute_path)
-                      # print(error.json_path)
-                      # print(error.context)
+                              error.message)
               except ValidationError as e:
-                  print(e)
+                  logger.debug(f"{traceback.print_exc()}")
                   continue
-        pbar.close()
+
+  required_property_missing_file = set(required_property_missing_file)
+  logger.info(f"필수 항목 불충족 파일 개수: {len(required_property_missing_file)}")
+  logger.info(f"형식 불충족 밸류 개수: {len(required_property_value_missing_file)}")
+  logger.info(f"검사한 총 파일 개수: {len(json_files)}")
+    
+def validate_jsons_main(args):
+  json_files = 0
+  required_property_missing_file = []
+  required_property_value_missing_file = []
+  validator = Draft7Validator(my_json_schema)
+  for root, dir, files in os.walk(args.json_dir):
+      if files:
+        for file in files:
+          _, ext = os.path.splitext(file)
+          if ext == ".json":
+              try:
+                  with open(os.path.join(root, file), "r", encoding="utf-8") as json_file:
+                      try:
+                        parsed_json = json.load(json_file)
+                        json_files += 1
+                      except Exception:
+                        logger.debug(traceback.print_exc())
+                        logger.info(f"file name : {file}")
+                  for error in sorted(validator.iter_errors(parsed_json), key=str):
+                      print(
+                          f"Message: {error.message} \nFile: {file} \nError source : {'.'.join([str(item) for item in error.absolute_path])}\n")
+                      if "required property" in error.message:
+                          required_property_missing_file.append(file)
+                      else:
+                          required_property_value_missing_file.append(
+                                error.message)
+              except ValidationError as e:
+                  print(traceback.print_exc())
+                  continue
   required_property_missing_file = set(required_property_missing_file)
   logger.info(f"필수 항목 불충족 파일 개수: {len(required_property_missing_file)}")
   logger.info(f"형식 불충족 밸류 개수: {len(required_property_value_missing_file)}")

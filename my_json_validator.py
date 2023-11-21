@@ -4,14 +4,17 @@ import tkinter.ttk as ttk
 from utils.make_plots import make_plots
 from utils.validate_jsons import validate_jsons
 import logging
+import logging.config
 import sys
+import json
+import os 
+import traceback
 
-logger = logging.getLogger("json_validator_main")
-logger.setLevel(logging.INFO)
-streamhandler = logging.StreamHandler(sys.stdout)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-streamhandler.setFormatter(formatter)
-logger.addHandler(streamhandler)
+seperator = os.sep 
+with open(os.path.join("C:\\" "Users","승준","Downloads","my_json_tkinter","logger_config.json"), mode="r+", encoding="utf-8") as config_file:
+    config = json.load(config_file)
+    logging.config.dictConfig(config)
+    logger = logging.getLogger(__name__)
 
 class MyJsonValidator:
     def __init__(self, window):
@@ -65,14 +68,14 @@ class MyJsonValidator:
             logger.info(f"Current selected source language is {lang}")
             make_plots(json_path = json_path, lang = lang)
             # logger.info(plots)
-        except Exception :
-            logger.exception("message")
+        except Exception:
+            logger.error(traceback.print_exc())
             pass
-        try:
-            validate_jsons(json_dir = json_path)
-        except Exception as e:
-            print(e)
-            pass
+        # try:
+        #     validate_jsons(json_dir = json_path)
+        # except Exception as e:
+        #     print(e)
+        #     pass
 
 #1. root 
 window = tk.Tk()
