@@ -63,19 +63,19 @@ class MyJsonValidator:
     def confirm_callback(self): 
         json_path = folder_path.get()
         lang = var.get()
-        try:
-            logger.info(f"generating plots with jsons in {json_path}")
-            logger.info(f"Current selected source language is {lang}")
-            make_plots(json_path = json_path, lang = lang)
-            # logger.info(plots)
-        except Exception:
-            logger.error(traceback.print_exc())
-            pass
         # try:
-        #     validate_jsons(json_dir = json_path)
-        # except Exception as e:
-        #     print(e)
+        #     logger.info(f"generating plots with jsons in {json_path}")
+        #     logger.info(f"Current selected source language is {lang}")
+        #     make_plots(json_path = json_path, lang = lang)
+        #     # logger.info(plots)
+        # except Exception:
+        #     logger.error(traceback.print_exc())
         #     pass
+        try:
+            validate_jsons(json_dir = json_path)
+        except Exception as e:
+            print(e)
+            pass
 
 #1. root 
 window = tk.Tk()

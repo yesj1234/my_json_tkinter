@@ -3,7 +3,10 @@ import os
 import jsonschema
 from jsonschema import validate, ValidationError, Draft7Validator
 import logging 
+import logging.config
 import traceback
+import chardet
+import sys
 my_json_schema = {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Generated schema for Root",
@@ -200,10 +203,27 @@ my_json_schema = {
   ]
 }
 
+def _init_logger():
+  logging.basicConfig(
+    format = "%(created)f:%(levelname)s:%(name)s:%(module)s:%(message)s",
+    level= logging.INFO
+  )
+  logger = logging.getLogger(__name__)
+  consoleHandler = logging.StreamHandler(sys.stdout)
+  consoleHandler.setLevel(logging.INFO) 
+  logger.addHandler(consoleHandler)
+  
+  errorFileHandler = logging.FileHandler("./error_files.log")
+  errorFileHandler.setLevel(logging.ERROR)
+  logger.addHandler(errorFileHandler)
+  
+  return logger
 
-logger = logging.getLogger()
+logger = _init_logger()
+    
 
 def validate_jsons(json_dir):
+  unicodeDecodeError_files = []
   json_files = []
   required_property_missing_file = []
   required_property_value_missing_file = []
@@ -213,15 +233,18 @@ def validate_jsons(json_dir):
       for file in files:
           _, ext = os.path.splitext(file)
           if ext == ".json":
-              json_files.append(os.path.join(root, file))
+              with open(os.path.join(root, file), "rb") as raw_data:
+                result = chardet.detect(raw_data.read(10000))
               try:
-                  with open(os.path.join(root, file), "r", encoding="utf-8") as json_file:
+                  with open(os.path.join(root, file), "r", encoding=result["encoding"]) as json_file:
                       try:
                         parsed_json = json.load(json_file)
+                        json_files.append(os.path.join(root, file))
                       except Exception as e:
                         logger.debug(f"{traceback.print_exc()}")
                         logger.debug(f"file with encoding error: {file}")
                         pass
+                      
                   for error in sorted(validator.iter_errors(parsed_json), key=str):
                       print(
                           f"Message: {error.message} \nFile: {file} \nError source : {'.'.join([str(item) for item in error.absolute_path])}\n")
@@ -230,14 +253,21 @@ def validate_jsons(json_dir):
                       else:
                           required_property_value_missing_file.append(
                               error.message)
-              except ValidationError as e:
-                  logger.debug(f"{traceback.print_exc()}")
-                  continue
+              except ValidationError:
+                logger.debug(traceback.print_exc())
+                pass
+              except UnicodeDecodeError: 
+                unicodeDecodeError_files.append(os.path.join(root, file))
+                logger.debug(traceback.print_exc())
+                logger.error(os.path.join(root, file) + "\n")
+                pass
 
   required_property_missing_file = set(required_property_missing_file)
-  logger.info(f"필수 항목 불충족 파일 개수: {len(required_property_missing_file)}")
-  logger.info(f"형식 불충족 밸류 개수: {len(required_property_value_missing_file)}")
-  logger.info(f"검사한 총 파일 개수: {len(json_files)}")
+  
+  logger.info(f"필수 항목 불충족 파일 개수:{len(required_property_missing_file)}")
+  logger.info(f"형식 불충족 밸류 개수     :{len(required_property_value_missing_file)}")
+  logger.info(f"UnicodeDecodeError      :{len(unicodeDecodeError_files)}")
+  logger.info(f"검사한 총 파일 개수       :{len(json_files)}")
     
 def validate_jsons_main(args):
   json_files = 0
@@ -245,6 +275,7 @@ def validate_jsons_main(args):
   required_property_value_missing_file = []
   validator = Draft7Validator(my_json_schema)
   for root, dir, files in os.walk(args.json_dir):
+      print(f"current folder: {os.path.join(root)}")
       if files:
         for file in files:
           _, ext = os.path.splitext(file)
